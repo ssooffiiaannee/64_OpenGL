@@ -5,11 +5,14 @@
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 // Window dimensions
 const GLint WIDTH = 800, HEIGHT = 600;
 
-GLuint VAO, VBO, programShader, uniformXMove;
+GLuint VAO, VBO, programShader, uniformModel;
 
 bool direction = true;
 float triOffset = 0.0f;
@@ -20,10 +23,10 @@ float triIncrement = 0.0005f;
 static const char* vShader = R"(                                  
 #version 330                                                                               
 layout (location = 0) in vec3 pos;
-uniform float xMove;                              
+uniform mat4 model;                              
 void main()                                                     
 {                                                               
-    gl_Position = vec4(0.4 * pos.x, xMove + 0.4 * pos.y, pos.z, 1.0);   
+    gl_Position = model * vec4(0.4 * pos.x, 0.4 * pos.y, pos.z, 1.0);   
                                                                 
 })";
 
@@ -92,7 +95,7 @@ void CompileShaders()
         return;
     }
 
-    uniformXMove = glGetUniformLocation(programShader, "xMove");
+    uniformModel = glGetUniformLocation(programShader, "model");
 }
 
 void CreateTriangle()
@@ -188,14 +191,24 @@ int main()
         if (abs(triOffset) > triMaxoffset) {
             direction = !direction;
         }
-        glUniform1f(uniformXMove, triOffset); // does not work here
+
+        //glm::mat4 model/*(1.0f);
+        //model = glm::translate(model, glm::vec3(triOffset, 0, 0));
+        //glUniformMatrix4f*/v(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+
+        //glUniform1f(uniformXMove, triOffset); // does not work here
 
         // Clear window
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(programShader);
-        glUniform1f(uniformXMove, triOffset);
+        //glUniform1f(uniformXMove, triOffset);
+        glm::mat4 model(1.0f);
+        model = glm::translate(model, glm::vec3(triOffset, 0, 0));
+        glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+
+        //glUniform1f(uniformXMove, triOffset); // does not work here
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
