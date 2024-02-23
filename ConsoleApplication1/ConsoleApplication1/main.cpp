@@ -24,25 +24,29 @@ float toRads = 3.14 / 180;
 
 // vertex shader
 static const char* vShader = R"(                                  
-#version 330                                                                               
+#version 330            
+                                                                   
 layout (location = 0) in vec3 pos;
-uniform mat4 model;                              
+uniform mat4 model;   
+out vec4 col;
+                      
 void main()                                                     
 {                                                               
     gl_Position = model * vec4(pos, 1.0);   
-                                                                
+    col = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);                                                  
 })";
 
 // fragment shader
 static const char* fShader = R"(                             
 #version 330                                                    
                                                                                                 
-out vec4 colour;                                            
+out vec4 colour;   
+in vec4 col;    
+                                     
 void main()                                                     
 {                                                               
-    colour = vec4(1.0, 0, 0, 1.0);                                                                                              
-}                                                               
-)";
+    colour = col;                                                               
+})";
 
 void AddShader(GLuint program, const char* shaderCode, GLenum shaderType)
 {
@@ -199,32 +203,19 @@ int main()
         if(angle >= 360)
             angle -= 360;
 
-        //glm::mat4 model/*(1.0f);
-        //model = glm::translate(model, glm::vec3(triOffset, 0, 0));
-        //glUniformMatrix4f*/v(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-
-        //glUniform1f(uniformXMove, triOffset); // does not work here
 
         // Clear window
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(programShader);
-
-        //glUniform1f(uniformXMove, triOffset);
-        //glm::mat4 model(1.0f);
-
-        
+       
         
         glm::mat4 model(1.0f);
-        model = glm::translate(model, glm::vec3(triOffset, 0, 0));
-        model = glm::rotate(model, angle * toRads, glm::vec3(0.0, 0.0, 1.0f));
         model = glm::scale(model, glm::vec3(0.4, 0.4, 1));
         
 
         glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-
-        //glUniform1f(uniformXMove, triOffset); // does not work here
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
