@@ -19,6 +19,9 @@ float triOffset = 0.0f;
 float triMaxoffset = 0.7f;
 float triIncrement = 0.0005f;
 
+float angle = 0;
+float toRads = 3.14 / 180;
+
 // vertex shader
 static const char* vShader = R"(                                  
 #version 330                                                                               
@@ -26,7 +29,7 @@ layout (location = 0) in vec3 pos;
 uniform mat4 model;                              
 void main()                                                     
 {                                                               
-    gl_Position = model * vec4(0.4 * pos.x, 0.4 * pos.y, pos.z, 1.0);   
+    gl_Position = model * vec4(pos, 1.0);   
                                                                 
 })";
 
@@ -192,6 +195,10 @@ int main()
             direction = !direction;
         }
 
+        angle += 0.1f;
+        if(angle >= 360)
+            angle -= 360;
+
         //glm::mat4 model/*(1.0f);
         //model = glm::translate(model, glm::vec3(triOffset, 0, 0));
         //glUniformMatrix4f*/v(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -203,9 +210,18 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(programShader);
+
         //glUniform1f(uniformXMove, triOffset);
+        //glm::mat4 model(1.0f);
+
+        
+        
         glm::mat4 model(1.0f);
         model = glm::translate(model, glm::vec3(triOffset, 0, 0));
+        model = glm::rotate(model, angle * toRads, glm::vec3(0.0, 0.0, 1.0f));
+        model = glm::scale(model, glm::vec3(0.4, 0.4, 1));
+        
+
         glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 
         //glUniform1f(uniformXMove, triOffset); // does not work here
