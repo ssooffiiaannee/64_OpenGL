@@ -12,7 +12,7 @@
 // Window dimensions
 const GLint WIDTH = 800, HEIGHT = 600;
 
-GLuint VAO, VBO, programShader, uniformModel;
+GLuint VAO, VBO, IBO, programShader, uniformModel;
 
 bool direction = true;
 float triOffset = 0.0f;
@@ -107,14 +107,27 @@ void CompileShaders()
 
 void CreateTriangle()
 {
+    unsigned int indices[] = {
+        0, 3, 1,
+        1, 3, 2,
+        2, 3, 0,
+        0, 1, 2
+    };
+
     GLfloat vertices[] = {
         -1.0f, -1.0f, 0.0f,
+        0.0f, -1.0f, 1.0f,
         1.0f, -1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f
+        0.0f, 1.0f, 0.0f,
+        
     };
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO); // VAO is name of a vertex array object previously returned from a call to glGenVertexArrays
+
+    glGenBuffers(1, &IBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -124,8 +137,10 @@ void CreateTriangle()
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    
 
     glBindVertexArray(0);   // break existing array object binding
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 
@@ -199,7 +214,7 @@ int main()
             direction = !direction;
         }
 
-        angle += 0.1f;
+        angle += 0.01f;
         if(angle >= 360)
             angle -= 360;
 
@@ -212,13 +227,16 @@ int main()
        
         
         glm::mat4 model(1.0f);
-        model = glm::scale(model, glm::vec3(0.4, 0.4, 1));
+        //model = glm::scale(model, glm::vec3(0.4, 0.4, 1));
+        model = glm::rotate(model, angle * toRads, glm::vec3(0.0f, 1.0f, 0.0f));
         
 
         glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
 
         glUseProgram(0);
