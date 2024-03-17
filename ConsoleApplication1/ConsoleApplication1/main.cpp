@@ -15,8 +15,6 @@
 #include "Shader.h"
 #include "Camera.h"
 
-const float toRadians = 3.14159265f / 180.0f;
-
 Window mainWindow;
 std::vector<Mesh*> meshList;
 std::vector<Shader> shaderList;
@@ -32,11 +30,13 @@ static const char* vShader = "Shaders/shader.vert";
 static const char* fShader = "Shaders/shader.frag";
 
 std::vector<float> sphereVertices;
-std::vector<size_t> sphereIndices;
+std::vector<unsigned int> sphereIndices;
 
-const float radius = 0.5;
-const float sectorCount = 4;
-const float stackCount = 2;
+#define VS 3
+
+const float radius = 2;
+const float sectorCount = 50; // Min 3
+const float stackCount = 50; // min 2
 
 void createSpherePoints()
 {
@@ -53,10 +53,6 @@ void createSpherePoints()
 			float y = radius * glm::cos(phi) * glm::sin(theta);
 			float x = radius * glm::cos(phi) * glm::cos(theta);
 			float z = radius * glm::sin(phi);
-			//printf("test\n");
-#ifdef _DEBUG
-			printf("%f %f\n", phi, theta);
-#endif
 
 			sphereVertices.push_back(x);
 			sphereVertices.push_back(y);
@@ -71,65 +67,56 @@ void createSpherePoints()
 
 void createSphereIndices()
 {
-	for (int i = 0; i < sphereVertices.size() - sectorCount; i++)
+	size_t n_points = sphereVertices.size() / VS;
+	for (auto i : { (size_t) 0, n_points - 1 })
 	{
-		if (i == 0 || i == sphereIndices.size())
+		int d = (i == 0) ? 1 : -1;
+		for (size_t j = 1; j < sectorCount + 1; j++)
 		{
-			int d = (i == 0) ? 1 : -1;
-			for (size_t j = 1; j < sectorCount + 1; j++)
-			{
-				sphereIndices.push_back(i);
-				sphereIndices.push_back(i + d * j);
-				if (j != sectorCount)
-					sphereIndices.push_back(i + d * (j + 1));
-				else
-					sphereIndices.push_back(i + d * 1);
-			}
-		}
-		else {
 			sphereIndices.push_back(i);
-			sphereIndices.push_back(i+1);
-			sphereIndices.push_back(i+sectorCount);
-
-			sphereIndices.push_back(i + 1);
-			sphereIndices.push_back(i + sectorCount);
-			sphereIndices.push_back(i + sectorCount + 1);
+			sphereIndices.push_back(i + d * j);
+			if (j != sectorCount)
+				sphereIndices.push_back(i + d * (j + 1));
+			else
+				sphereIndices.push_back(i + d * 1);
 		}
+	}
+	for (int i = 1; i < n_points - sectorCount - 2; i++)
+	{
+		sphereIndices.push_back(i);
+		sphereIndices.push_back(i + 1);
+		sphereIndices.push_back(i + sectorCount);
+
+		sphereIndices.push_back(i + 1);
+		sphereIndices.push_back(i + sectorCount);
+		sphereIndices.push_back(i + sectorCount + 1);
 	}
 }
 
 void createSphere() {
-	//createSpherePoi/*nts();
-	//createSphereIndices();*/
-
-
-	unsigned int indices[] = {
-		0,1,2,
-		0,2,3,
-		0,1,3,
-		4,1,2,
-		4,1,3,
-		4,2,3
-	};
-
-	GLfloat vertices[] = {
-		-1.0f, -1.0f, 0.0f,
-		0.0f, -1.0f, 1.0f,
-		1.0f, -1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f
-	};
+	createSpherePoints();
+	createSphereIndices();
 
 	Mesh* obj1 = new Mesh();
-	obj1->CreateMesh(vertices, indices, 12,12); 
+	obj1->CreateMesh(&sphereVertices[0], &sphereIndices[0], sphereVertices.size(), sphereIndices.size());
 	meshList.push_back(obj1);
 }
 
-void printVertices()
+void printVerticesIndices()
 {
+	std::cout << "Indices size : " << sphereIndices.size() << std::endl;
+	std::cout << "Vertices size: " << sphereVertices.size() << std::endl;
+
 	for (size_t i = 0; i < sphereVertices.size(); i++)
 	{
-		std::cout << sphereVertices[i] << ",";
+		std::cout << sphereVertices[i] << " ,";
 	}
+	std::cout << std::endl;
+	for (size_t i = 0; i < sphereIndices.size(); i++)
+	{
+		std::cout << sphereIndices[i] << " ,";
+	}
+	std::cout << std::endl;
 }
 
 void CreateObjects()
@@ -154,13 +141,9 @@ void CreateObjects()
 		0, 0, 0.5
 	};
 
-	Mesh* obj1 = new Mesh();
+	/*Mesh* obj1 = new Mesh();
 	obj1->CreateMesh(vertices, indices, sizeof(vertices)/sizeof(vertices[0]), sizeof(indices)/sizeof(indices[0]));
-	meshList.push_back(obj1);
-
-	/*Mesh* obj2 = new Mesh();
-	obj2->CreateMesh(vertices, indices, 12, 12);
-	meshList.push_back(obj2);*/
+	meshList.push_back(obj1);*/
 }
 
 void CreateShaders()
@@ -175,11 +158,11 @@ int main()
 	mainWindow = Window(800, 600);
 	mainWindow.Initialise();
 
-	CreateObjects();
-
-	createSpherePoints();
-	printVertices();
-
+	//CreateObjects();
+	createSphere();
+#ifdef _DEBUG
+	printVerticesIndices();
+#endif
 	CreateShaders();
 
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);
@@ -212,17 +195,10 @@ int main()
 		glm::mat4 model(1.0f);
 
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -2.5f));
-		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		meshList[0]->RenderMesh();
-
-		//model = glm::mat/*4(1.0f);
-		//model = glm::translate(model, glm::vec3(0.0f, 1.0f, -2.5f));
-		//model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//meshList[1]->RenderMesh();*/
 
 		glUseProgram(0);
 

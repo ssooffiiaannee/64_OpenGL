@@ -10,6 +10,6 @@ uniform mat4 view;
 
 void main()
 {
-	gl_Position =  projection * view * model * vec4(3*pos, 1.0); // the order is important : projection-view-model
+	gl_Position =  projection * view * model * vec4(pos, 1.0); // the order is important : projection-view-model
 	vCol = vec4(abs(pos), 0.0f);
 }
