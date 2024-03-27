@@ -15,5 +15,5 @@ void main()
 	gl_Position =  projection * view * model * vec4(pos, 1.0); // the order is important : projection-view-model
 	vCol = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);
 
-TexCoord = tex;
+	TexCoord = tex;
 }
