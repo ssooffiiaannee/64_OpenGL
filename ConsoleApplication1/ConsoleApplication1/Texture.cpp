@@ -1,12 +1,14 @@
 #include "Texture.h"
 
+
+
 Texture::Texture()
 {
 	textureID = 0;
 	width = 0;
 	height = 0;
 	bitDepth = 0;
-	fileLocation = "";	// png are lossless during compression (unlike jpeg) and they support an alpha channel for transparency
+	fileLocation = "";
 }
 
 Texture::Texture(char* fileLoc)
@@ -20,7 +22,7 @@ Texture::Texture(char* fileLoc)
 
 void Texture::LoadTexture()
 {
-	unsigned char* texData = stbi_load(fileLocation, &width, &height, &bitDepth, STBI_rgb_alpha);
+	unsigned char *texData = stbi_load(fileLocation, &width, &height, &bitDepth, 0);
 	if (!texData)
 	{
 		printf("Failed to find: %s\n", fileLocation);
@@ -58,6 +60,7 @@ void Texture::ClearTexture()
 	bitDepth = 0;
 	fileLocation = "";
 }
+
 
 Texture::~Texture()
 {
