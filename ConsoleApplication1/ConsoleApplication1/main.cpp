@@ -14,11 +14,15 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "Camera.h"
+#include "Light.h"
+#include "Material.h"
 
 Window mainWindow;
 std::vector<Mesh*> meshList;
 std::vector<Shader> shaderList;
 Camera camera;
+Light light;
+Material material;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -195,6 +199,12 @@ int main()
 	CreateShaders();
 
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);
+	light = Light(1.0, 0.0, 0.0, 0.2, -0.5, -0.5, -0.5, 0.2);
+	material = Material(0.2, 0.2);
+
+	light.UseLight();
+	material.UseMaterial();
+
 
 	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0;
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
