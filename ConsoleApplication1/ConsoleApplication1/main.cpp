@@ -200,13 +200,9 @@ int main()
 
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);
 	light = Light(1.0, 0.0, 0.0, 0.2, -0.5, -0.5, -0.5, 0.2);
-	material = Material(0.2, 0.2);
+	material = Material(0.9, 0.9);
 
-	light.UseLight();
-	material.UseMaterial();
-
-
-	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0;
+	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, ambienIntensity, ambientColour, diffuseIntensity, lightDirection, specularIntensity, shininess;
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
 
 	// Loop until window closed
@@ -230,6 +226,16 @@ int main()
 		uniformModel = shaderList[0].GetModelLocation();
 		uniformProjection = shaderList[0].GetProjectionLocation();
 		uniformView = shaderList[0].GetViewLocation();
+		ambienIntensity = shaderList[0].GetAmbienIntensityLocation();
+		ambientColour = shaderList[0].GetAmbientColourLocation();
+		diffuseIntensity = shaderList[0].GetDiffuseIntensityLocation();
+		lightDirection = shaderList[0].GetDirectionLocation();
+		specularIntensity = shaderList[0].GetSpecularIntensityLocation();
+		shininess = shaderList[0].GetShininessLocation();
+
+
+		light.UseLight(ambienIntensity, ambientColour, diffuseIntensity, lightDirection);
+		material.UseMaterial(specularIntensity, shininess);
 
 		glm::mat4 model(1.0f);
 
