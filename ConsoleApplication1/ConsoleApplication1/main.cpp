@@ -215,8 +215,8 @@ int main()
 	CreateShaders();
 
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);
-	light = Light(0.0, 1.0, 0.0, 0.5, -0.5, -0.5, -0.5, 0.6);
-	material = Material(0.9, 32);
+	light = Light(0.0, 1.0, 0.0, 0.2, -0.5, -0.5, -0.5, 0.6);
+	material = Material(0.9, 128);
 
 
 	GLuint uniformProjectionLocation = 0, uniformModelLocation = 0, uniformViewLocation = 0, ambienIntensityLocation = 0,
