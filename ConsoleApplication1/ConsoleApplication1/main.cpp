@@ -36,17 +36,21 @@ static const char* fShader = "Shaders/shader.frag";
 std::vector<float> sphereVertices;
 std::vector<unsigned int> sphereIndices;
 
-#define VS 3
+const float radius = 0.5;
+const float sectorCount = 30; // Min 3
+const float stackCount = 30; // min 2
 
-const float radius = 2;
-const float sectorCount = 50; // Min 3
-const float stackCount = 50; // min 2
+#define VS 6
 
 void createSpherePoints()
 {
 	sphereVertices.push_back(0);
 	sphereVertices.push_back(0);
 	sphereVertices.push_back(-radius);
+
+	sphereVertices.push_back(0.0);
+	sphereVertices.push_back(0.0);
+	sphereVertices.push_back(0.0);
 	for (std::size_t i = 1; i < stackCount; i++)
 	{
 		for (std::size_t j = 0; j < sectorCount; j++)
@@ -61,12 +65,20 @@ void createSpherePoints()
 			sphereVertices.push_back(x);
 			sphereVertices.push_back(y);
 			sphereVertices.push_back(z);
+
+			sphereVertices.push_back(0.0);
+			sphereVertices.push_back(0.0);
+			sphereVertices.push_back(0.0);
 		}
 	}
 	
 	sphereVertices.push_back(0);
 	sphereVertices.push_back(0);
 	sphereVertices.push_back(+radius);
+
+	sphereVertices.push_back(0.0);
+	sphereVertices.push_back(0.0);
+	sphereVertices.push_back(0.0);
 }
 
 void createSphereIndices()
@@ -97,15 +109,6 @@ void createSphereIndices()
 	}
 }
 
-void createSphere() {
-	createSpherePoints();
-	createSphereIndices();
-
-	Mesh* obj1 = new Mesh();
-	obj1->CreateMesh(&sphereVertices[0], &sphereIndices[0], sphereVertices.size(), sphereIndices.size());
-	meshList.push_back(obj1);
-}
-
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
 	unsigned int vLength, unsigned int normalOffset)
 {
@@ -114,6 +117,7 @@ void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat
 		unsigned int in0 = indices[i] * vLength;
 		unsigned int in1 = indices[i + 1] * vLength;
 		unsigned int in2 = indices[i + 2] * vLength;
+
 		glm::vec3 v1(vertices[in1] - vertices[in0], vertices[in1 + 1] - vertices[in0 + 1], vertices[in1 + 2] - vertices[in0 + 2]);
 		glm::vec3 v2(vertices[in2] - vertices[in0], vertices[in2 + 1] - vertices[in0 + 1], vertices[in2 + 2] - vertices[in0 + 2]);
 		glm::vec3 normal = glm::cross(v1, v2);
@@ -132,6 +136,17 @@ void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat
 		vec = glm::normalize(vec);
 		vertices[nOffset] = vec.x; vertices[nOffset + 1] = vec.y; vertices[nOffset + 2] = vec.z;
 	}
+}
+
+void createSphere() {
+	createSpherePoints();
+	createSphereIndices();
+
+	calcAverageNormals(&sphereIndices[0], sphereIndices.size(), &sphereVertices[0], sphereVertices.size(), VS, 3);
+
+	Mesh* obj1 = new Mesh();
+	obj1->CreateMesh(&sphereVertices[0], &sphereIndices[0], sphereVertices.size(), sphereIndices.size());
+	meshList.push_back(obj1);
 }
 
 
@@ -192,22 +207,25 @@ int main()
 	mainWindow.Initialise();
 
 	//CreateObjects();
+	//calcAverageNormals(&sphereIndices[0], sphereIndices.size(), &sphereVertices[0], sphereVertices.size(), VS, 3);
 	createSphere();
-#ifdef _DEBUG
-	printVerticesIndices();
-#endif
+	
+
 	CreateShaders();
 
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);
-	light = Light(1.0, 0.0, 0.0, 0.2, -0.5, -0.5, -0.5, 0.2);
-	material = Material(0.9, 0.9);
+	light = Light(0.0, 1.0, 0.0, 0.5, -0.5, -0.5, -0.5, 0.6);
+	material = Material(0.9, 32);
 
-	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, ambienIntensity, ambientColour, diffuseIntensity, lightDirection, specularIntensity, shininess;
+
+	GLuint uniformProjectionLocation = 0, uniformModelLocation = 0, uniformViewLocation = 0, ambienIntensityLocation = 0,
+		ambientColourLocation = 0, diffuseIntensityLocation = 0, lightDirectionLocation = 0, specularIntensityLocation = 0, shininessLocation = 0;
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
 
 	// Loop until window closed
 	while (!mainWindow.getShouldClose())
 	{
+		//printf("Running while ...\n");
 		GLfloat now = glfwGetTime(); // SDL_GetPerformanceCounter();
 		deltaTime = now - lastTime; // (now - lastTime)*1000/SDL_GetPerformanceFrequency();
 		lastTime = now;
@@ -223,26 +241,26 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shaderList[0].UseShader();
-		uniformModel = shaderList[0].GetModelLocation();
-		uniformProjection = shaderList[0].GetProjectionLocation();
-		uniformView = shaderList[0].GetViewLocation();
-		ambienIntensity = shaderList[0].GetAmbienIntensityLocation();
-		ambientColour = shaderList[0].GetAmbientColourLocation();
-		diffuseIntensity = shaderList[0].GetDiffuseIntensityLocation();
-		lightDirection = shaderList[0].GetDirectionLocation();
-		specularIntensity = shaderList[0].GetSpecularIntensityLocation();
-		shininess = shaderList[0].GetShininessLocation();
+		uniformModelLocation = shaderList[0].GetModelLocation();
+		uniformProjectionLocation = shaderList[0].GetProjectionLocation();
+		uniformViewLocation = shaderList[0].GetViewLocation();
+		ambienIntensityLocation = shaderList[0].GetAmbienIntensityLocation();
+		ambientColourLocation = shaderList[0].GetAmbientColourLocation();
+		diffuseIntensityLocation = shaderList[0].GetDiffuseIntensityLocation();
+		lightDirectionLocation = shaderList[0].GetDirectionLocation();
+		specularIntensityLocation = shaderList[0].GetSpecularIntensityLocation();
+		shininessLocation = shaderList[0].GetShininessLocation();
 
 
-		light.UseLight(ambienIntensity, ambientColour, diffuseIntensity, lightDirection);
-		material.UseMaterial(specularIntensity, shininess);
+		light.UseLight(ambienIntensityLocation, ambientColourLocation, diffuseIntensityLocation, lightDirectionLocation);
+		material.UseMaterial(specularIntensityLocation, shininessLocation);
 
 		glm::mat4 model(1.0f);
 
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -2.5f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		glUniformMatrix4fv(uniformModelLocation, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniformViewLocation, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		meshList[0]->RenderMesh();
 
 		glUseProgram(0);
