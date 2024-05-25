@@ -128,12 +128,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\hsous\source\repos\OpenGL_udemy_course\deps\glew-2.1.0\include;C:\Users\hsous\source\repos\OpenGL_udemy_course\deps\glfw-3.3.9.bin.WIN64\glfw-3.3.9.bin.WIN64\include;C:\Users\hsous\source\repos\OpenGL_udemy_course\deps\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\deps\glew-2.1.0\include;$(SolutionDir)\..\..\deps\glfw-3.3.9.bin.WIN64\glfw-3.3.9.bin.WIN64\include;$(SolutionDir)\..\..\deps\glm</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\hsous\source\repos\OpenGL_udemy_course\deps\glfw-3.3.9.bin.WIN64\glfw-3.3.9.bin.WIN64\lib-vc2022;C:\Users\hsous\source\repos\OpenGL_udemy_course\deps\glew-2.1.0\lib\Release\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\..\..\deps\glfw-3.3.9.bin.WIN64\glfw-3.3.9.bin.WIN64\lib-vc2022;$(SolutionDir)\..\..\deps\glew-2.1.0\lib\Release\x64</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
