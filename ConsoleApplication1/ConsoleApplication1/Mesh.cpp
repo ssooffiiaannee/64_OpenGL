@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include <iostream>
 #include <vector>
 
 Mesh::Mesh()
@@ -38,8 +39,18 @@ void Mesh::CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int num
 
 void Mesh::RenderMesh()
 {
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	
+	try {
+		glBindVertexArray(VAO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	}catch(std::exception& e)
+	{
+		std::cout << e.what() << std::endl;
+		auto errorCode = glGetError();
+		printf("%d\n", errorCode);
+	}
+	
+	
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
