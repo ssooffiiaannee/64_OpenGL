@@ -100,8 +100,9 @@ void createSphereIndices()
 	for (int i = 1; i < n_points - sectorCount - 2; i++)
 	{
 		sphereIndices.push_back(i);
-		sphereIndices.push_back(i + 1);
 		sphereIndices.push_back(i + sectorCount);
+		sphereIndices.push_back(i + 1);
+		
 
 		sphereIndices.push_back(i + 1);
 		sphereIndices.push_back(i + sectorCount);
