@@ -61,7 +61,9 @@
     <ClInclude Include="Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Distribution.h" />
+    <ClInclude Include="Distribution.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ConsoleApplication1.rc">

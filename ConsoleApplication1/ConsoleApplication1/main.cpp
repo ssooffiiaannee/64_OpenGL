@@ -16,6 +16,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Material.h"
+#include "Distribution.h"
 
 Window mainWindow;
 std::vector<Mesh*> meshList;
@@ -36,9 +37,16 @@ static const char* fShader = "Shaders/shader.frag";
 std::vector<float> sphereVertices;
 std::vector<unsigned int> sphereIndices;
 
-const float radius = 0.5;
+const float radius = 0.01;
 const float sectorCount = 30; // Min 3
 const float stackCount = 30; // min 2
+
+Distribution distribution(0.0, 0.01, 10);
+
+std::vector<float> posX, posY;
+std::vector<std::pair<float, float>> pos;
+#define N_SPHERES	(uint32_t) 1000
+#define SAMPLES	(uint32_t) 1000
 
 #define VS 6
 
@@ -139,16 +147,16 @@ void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat
 	}
 }
 
-void createSphere() {
-	createSpherePoints();
-	createSphereIndices();
-
-	calcAverageNormals(&sphereIndices[0], sphereIndices.size(), &sphereVertices[0], sphereVertices.size(), VS, 3);
-
-	Mesh* obj1 = new Mesh();
-	obj1->CreateMesh(&sphereVertices[0], &sphereIndices[0], sphereVertices.size(), sphereIndices.size());
-	meshList.push_back(obj1);
-}
+//void createSphere() {
+//	createSpherePoints();
+//	createSphereIndices();
+//
+//	calcAverageNormals(&sphereIndices[0], sphereIndices.size(), &sphereVertices[0], sphereVertices.size(), VS, 3);
+//
+//	Mesh* obj1 = new Mesh();
+//	obj1->CreateMesh(&sphereVertices[0], &sphereIndices[0], sphereVertices.size(), sphereIndices.size());
+//	meshList.push_back(obj1);
+//}
 
 
 void printVerticesIndices()
@@ -189,10 +197,6 @@ void CreateObjects()
 		5.96244e-09, -0.5, 0,
 		0, 0, 0.5
 	};
-
-	/*Mesh* obj1 = new Mesh();
-	obj1->CreateMesh(vertices, indices, sizeof(vertices)/sizeof(vertices[0]), sizeof(indices)/sizeof(indices[0]));
-	meshList.push_back(obj1);*/
 }
 
 void CreateShaders()
@@ -202,13 +206,58 @@ void CreateShaders()
 	shaderList.push_back(*shader1);
 }
 
+void createSphere() {
+	createSpherePoints();
+	createSphereIndices();
+
+	calcAverageNormals(&sphereIndices[0], sphereIndices.size(), &sphereVertices[0], sphereVertices.size(), VS, 3);
+
+	for (size_t i = 0; i < 2 * N_SPHERES; i++)
+	{
+		meshList.push_back(new Mesh());
+		meshList[i]->CreateMesh(&sphereVertices[0], &sphereIndices[0], sphereVertices.size(), sphereIndices.size());
+	}
+}
+
+float reverse_BS(float x, std::vector<float> v)
+{
+	int l = 0, h = v.size() - 1, mid = (l + h) / 2;
+	assert(x <= 1.0 && x >= 0.0, "x out of legit range !");
+	while (h - l != 1)
+	{
+		if (x >= v[mid])
+		{
+			l = mid;
+		}
+		else h = mid;
+		mid = (l + h) / 2;
+	}
+	auto width = distribution.getWidth();
+	auto std = distribution.getStd();
+	auto mean = distribution.getMean();
+	return (- width * std / 2 + h * (width * std) / SAMPLES) + mean;
+}
+
+void compPos(std::vector<std::pair<float, float>>& pos)
+{
+	std::srand(std::time(nullptr));
+	auto cdt = distribution.getCDT(SAMPLES);
+	for (size_t i = 0; i < N_SPHERES; i++)
+	{
+		float x_ = (float)rand() / RAND_MAX;
+		float y_ = (float)rand() / RAND_MAX;
+		pos.push_back({ reverse_BS(x_, cdt), reverse_BS(y_, cdt) });
+	}
+}
+
 int main()
 {
 	mainWindow = Window(800, 600);
 	mainWindow.Initialise();
 
-	//CreateObjects();
-	//calcAverageNormals(&sphereIndices[0], sphereIndices.size(), &sphereVertices[0], sphereVertices.size(), VS, 3);
+	/*compPos(posX);
+	compPos(posY);*/
+	compPos(pos);
 	createSphere();
 	
 
@@ -258,11 +307,14 @@ int main()
 
 		glm::mat4 model(1.0f);
 
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -2.5f));
-		glUniformMatrix4fv(uniformModelLocation, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(uniformProjectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformViewLocation, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
-		meshList[0]->RenderMesh();
+		for (size_t i = 0; i < N_SPHERES; i++){
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(pos[i].first, pos[i].second, -2.5f));
+			glUniformMatrix4fv(uniformModelLocation, 1, GL_FALSE, glm::value_ptr(model));
+			glUniformMatrix4fv(uniformProjectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
+			glUniformMatrix4fv(uniformViewLocation, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+			meshList[i]->RenderMesh();
+		}
 
 		glUseProgram(0);
 
