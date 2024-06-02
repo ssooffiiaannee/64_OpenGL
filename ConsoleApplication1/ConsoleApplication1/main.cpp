@@ -2,6 +2,7 @@
 #include <string.h>
 #include <cmath>
 #include <vector>
+#include <tuple>
 
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
@@ -16,7 +17,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Material.h"
-#include "Distribution.h"
+#include "schrodinger.h"
 
 Window mainWindow;
 std::vector<Mesh*> meshList;
@@ -37,18 +38,19 @@ static const char* fShader = "Shaders/shader.frag";
 std::vector<float> sphereVertices;
 std::vector<unsigned int> sphereIndices;
 
-const float radius = 0.01;
+const float radius = 0.03;
 const float sectorCount = 30; // Min 3
 const float stackCount = 30; // min 2
 
-Distribution distribution(0.0, 0.01, 10);
+schrodinger s(4, 3, 2);
 
-std::vector<float> posX, posY;
-std::vector<std::pair<float, float>> pos;
-#define N_SPHERES	(uint32_t) 1000
-#define SAMPLES	(uint32_t) 1000
+std::vector<std::tuple<double, double, double>> pos;
+#define N_SPHERES	(uint32_t) 10000
+#define SAMPLES	(uint32_t) 500
 
 #define VS 6
+
+double computeMax();
 
 void createSpherePoints()
 {
@@ -212,51 +214,66 @@ void createSphere() {
 
 	calcAverageNormals(&sphereIndices[0], sphereIndices.size(), &sphereVertices[0], sphereVertices.size(), VS, 3);
 
-	for (size_t i = 0; i < 2 * N_SPHERES; i++)
+	for (size_t i = 0; i < N_SPHERES; i++)
 	{
 		meshList.push_back(new Mesh());
 		meshList[i]->CreateMesh(&sphereVertices[0], &sphereIndices[0], sphereVertices.size(), sphereIndices.size());
 	}
 }
 
-float reverse_BS(float x, std::vector<float> v)
-{
-	int l = 0, h = v.size() - 1, mid = (l + h) / 2;
-	assert(x <= 1.0 && x >= 0.0, "x out of legit range !");
-	while (h - l != 1)
-	{
-		if (x >= v[mid])
-		{
-			l = mid;
-		}
-		else h = mid;
-		mid = (l + h) / 2;
-	}
-	auto width = distribution.getWidth();
-	auto std = distribution.getStd();
-	auto mean = distribution.getMean();
-	return (- width * std / 2 + h * (width * std) / SAMPLES) + mean;
-}
 
-void compPos(std::vector<std::pair<float, float>>& pos)
+void compPos(std::vector<std::tuple<double, double, double>>& pos)
 {
 	std::srand(std::time(nullptr));
-	auto cdt = distribution.getCDT(SAMPLES);
+	auto mx = computeMax();
+	
 	for (size_t i = 0; i < N_SPHERES; i++)
 	{
-		float x_ = (float)rand() / RAND_MAX;
-		float y_ = (float)rand() / RAND_MAX;
-		pos.push_back({ reverse_BS(x_, cdt), reverse_BS(y_, cdt) });
+		double r_ = (double)rand() / RAND_MAX * s.getRange();
+		double theta_ = (double)rand() / RAND_MAX * s.getThetaRange();
+		double phi_ = (double)rand() / RAND_MAX * s.getPhiRange();
+		
+		// 
+		double res = s.generate(r_, theta_, phi_);
+		double v = (double)rand() / RAND_MAX * mx;
+
+		double x_ = r_ * glm::cos(theta_) * glm::sin(phi_);
+		double y_ = r_ * glm::sin(theta_) * glm::sin(phi_);
+		double z_ = r_ * glm::cos(phi_);
+		if (v < res )
+		{
+			pos.push_back(
+				std::make_tuple(x_, y_, z_)
+			);
+		}
+		else i--;
 	}
+}
+double computeMax()
+{
+	auto r_range = s.getRange();
+	auto theta_range = s.getThetaRange();
+	auto phi_range = s.getPhiRange();
+	double mx = 0;
+
+	for (size_t i = 0; i < SAMPLES; i++) {
+		printf("%d / %d\n", i, SAMPLES);
+		for (size_t j = 0; j < SAMPLES; j++) {
+			for (size_t k = 0; k < SAMPLES; k++) {
+				auto val = s.generate(r_range / SAMPLES * k, theta_range * j / SAMPLES, phi_range * i / SAMPLES);
+
+				mx = std::max(mx, val);
+			}
+		}
+	}
+	return mx;
 }
 
 int main()
 {
-	mainWindow = Window(800, 600);
+	mainWindow = Window(1200, 1000);
 	mainWindow.Initialise();
 
-	/*compPos(posX);
-	compPos(posY);*/
 	compPos(pos);
 	createSphere();
 	
@@ -307,9 +324,9 @@ int main()
 
 		glm::mat4 model(1.0f);
 
-		for (size_t i = 0; i < N_SPHERES; i++){
+		for (size_t i = 0; i < pos.size(); i++) {
 			model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(pos[i].first, pos[i].second, -2.5f));
+			model = glm::translate(model, glm::vec3(std::get<0>(pos[i]), std::get<1>(pos[i]), std::get<2>(pos[i])));
 			glUniformMatrix4fv(uniformModelLocation, 1, GL_FALSE, glm::value_ptr(model));
 			glUniformMatrix4fv(uniformProjectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
 			glUniformMatrix4fv(uniformViewLocation, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
