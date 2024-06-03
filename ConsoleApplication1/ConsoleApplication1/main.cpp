@@ -38,15 +38,15 @@ static const char* fShader = "Shaders/shader.frag";
 std::vector<float> sphereVertices;
 std::vector<unsigned int> sphereIndices;
 
-const float radius = 0.03;
+const float radius = 0.002;
 const float sectorCount = 30; // Min 3
 const float stackCount = 30; // min 2
 
-schrodinger s(4, 3, 2);
+schrodinger s(2, 0, 0); //(4, 3, 1);
 
 std::vector<std::tuple<double, double, double>> pos;
 #define N_SPHERES	(uint32_t) 10000
-#define SAMPLES	(uint32_t) 500
+#define SAMPLES	(uint32_t) 200
 
 #define VS 6
 
@@ -222,7 +222,7 @@ void createSphere() {
 }
 
 
-void compPos(std::vector<std::tuple<double, double, double>>& pos)
+void rejectionSampling(std::vector<std::tuple<double, double, double>>& pos)
 {
 	std::srand(std::time(nullptr));
 	auto mx = computeMax();
@@ -240,7 +240,7 @@ void compPos(std::vector<std::tuple<double, double, double>>& pos)
 		double x_ = r_ * glm::cos(theta_) * glm::sin(phi_);
 		double y_ = r_ * glm::sin(theta_) * glm::sin(phi_);
 		double z_ = r_ * glm::cos(phi_);
-		if (v < res )
+		if (v < res && (z_ < 0 && z_ > -0.2))
 		{
 			pos.push_back(
 				std::make_tuple(x_, y_, z_)
@@ -274,7 +274,7 @@ int main()
 	mainWindow = Window(1200, 1000);
 	mainWindow.Initialise();
 
-	compPos(pos);
+	rejectionSampling(pos);
 	createSphere();
 	
 

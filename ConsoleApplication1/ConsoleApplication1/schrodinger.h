@@ -4,7 +4,7 @@
 class schrodinger
 {
 public:
-	schrodinger(int n, int l, int m, double r = 10);
+	schrodinger(int n, int l, int m, double r = 40);
 	~schrodinger();
 	double constPart();
 	void setRange(double r);
