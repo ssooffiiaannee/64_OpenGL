@@ -6,4 +6,5 @@ Shrodinger equation solutions with OpenGL
 
 # Hydrogen Schrodinger equation solution for (n, l, m) = (4, 3, 1)
 
-<img src="https://github.com/ssooffiiaannee/64_OpenGL/assets/37119086/a07df547-29f5-4f41-998d-05639c2b0917" width="600" height="600"/>
+<img src="https://github.com/ssooffiiaannee/64_OpenGL/assets/37119086/a07df547-29f5-4f41-998d-05639c2b0917" width="600" height="600"/>   ![image](https://github.com/ssooffiiaannee/64_OpenGL/assets/37119086/f4d9a427-4ce8-4caa-be20-91762e6cf8e0)
+
