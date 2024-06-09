@@ -94,7 +94,7 @@ double schrodinger::generate(double r, double theta, double phi)
 	printf("std::abs(sphericalHarmonics(l, m, theta, phi)) = %1.10f \n", std::abs(sphericalHarmonics(l, m, theta, phi)));*/
 #endif
 
-	return radiusVar(r) * getConstPart() * schroLaguerre(r * 2 / n) * abs(sphericalHarmonics(l, m, theta, phi).real());
+	return abs(radiusVar(r) * getConstPart() * schroLaguerre(r * 2 / n)) * abs(sphericalHarmonics(l, m, theta, phi).real());
 }
 
 
