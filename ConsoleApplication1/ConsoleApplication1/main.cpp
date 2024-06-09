@@ -11,6 +11,8 @@
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
 
+#include <omp.h>
+
 #include "Window.h"
 #include "Mesh.h"
 #include "Shader.h"
@@ -46,11 +48,13 @@ schrodinger s(4, 3, 1);
 
 std::vector<std::tuple<double, double, double>> pos;
 #define N_SPHERES	(uint32_t) 10000
-#define SAMPLES	(uint32_t) 200
+#define SAMPLES	(uint32_t) 400
 
 #define VS 6
 
 double computeMax();
+
+#define NUM_THREADS 10
 
 void createSpherePoints()
 {
@@ -254,19 +258,37 @@ double computeMax()
 	auto r_range = s.getRange();
 	auto theta_range = s.getThetaRange();
 	auto phi_range = s.getPhiRange();
-	double mx = 0;
+	double mx_out = 0;
 
-	for (size_t i = 0; i < SAMPLES; i++) {
-		printf("%d / %d\n", i, SAMPLES);
-		for (size_t j = 0; j < SAMPLES; j++) {
-			for (size_t k = 0; k < SAMPLES; k++) {
-				auto val = s.generate(r_range / SAMPLES * k, theta_range * j / SAMPLES, phi_range * i / SAMPLES);
+	omp_set_num_threads(NUM_THREADS + 10);
 
-				mx = std::max(mx, val);
+#pragma omp parallel
+	{
+		
+		double mx = 0;
+		int id = omp_get_thread_num();
+		
+		int nthrds = omp_get_num_threads(), nthreads;
+		nthreads = nthrds;
+		
+		
+		for (size_t i = id; i < SAMPLES; i += nthreads) {
+			printf("%d / %d\n", i, SAMPLES);
+			for (size_t j = 0; j < SAMPLES; j++) {
+				for (size_t k = 0; k < SAMPLES; k++) {
+					auto val = s.generate(r_range / SAMPLES * k, theta_range * j / SAMPLES, phi_range * i / SAMPLES);
+
+					mx = std::max(mx, val);
+				}
 			}
 		}
+#pragma omp critical
+		{
+			mx_out = std::max(mx, mx_out);
+		}
 	}
-	return mx;
+
+	return mx_out;
 }
 
 int main()
