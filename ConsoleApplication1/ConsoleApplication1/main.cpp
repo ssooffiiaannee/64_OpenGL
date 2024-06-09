@@ -38,11 +38,11 @@ static const char* fShader = "Shaders/shader.frag";
 std::vector<float> sphereVertices;
 std::vector<unsigned int> sphereIndices;
 
-const float radius = 0.002;
+const float radius = 0.04;
 const float sectorCount = 30; // Min 3
 const float stackCount = 30; // min 2
 
-schrodinger s(2, 0, 0); //(4, 3, 1);
+schrodinger s(4, 3, 1);
 
 std::vector<std::tuple<double, double, double>> pos;
 #define N_SPHERES	(uint32_t) 10000
@@ -240,7 +240,7 @@ void rejectionSampling(std::vector<std::tuple<double, double, double>>& pos)
 		double x_ = r_ * glm::cos(theta_) * glm::sin(phi_);
 		double y_ = r_ * glm::sin(theta_) * glm::sin(phi_);
 		double z_ = r_ * glm::cos(phi_);
-		if (v < res && (z_ < 0 && z_ > -0.2))
+		if (v < res && z_ < 0)
 		{
 			pos.push_back(
 				std::make_tuple(x_, y_, z_)
