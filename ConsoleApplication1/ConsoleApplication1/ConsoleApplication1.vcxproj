@@ -133,13 +133,20 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\..\..\deps\glew-2.1.0\include;$(SolutionDir)\..\..\deps\glfw-3.3.9.bin.WIN64\glfw-3.3.9.bin.WIN64\include;$(SolutionDir)\..\..\deps\glm;D:\boost_1_85_0\boost_1_85_0</AdditionalIncludeDirectories>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\..\deps\glfw-3.3.9.bin.WIN64\glfw-3.3.9.bin.WIN64\lib-vc2022;$(SolutionDir)\..\..\deps\glew-2.1.0\lib\Release\x64;D:\boost_1_85_0\boost_1_85_0\stage\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\..\..\deps\glfw-3.3.9.bin.WIN64\glfw-3.3.9.bin.WIN64\lib-vc2022;$(SolutionDir)\..\..\deps\glew-2.1.0\lib\Release\x64;D:\boost_1_85_0\boost_1_85_0\stage\lib;$(LLVMInstallDir)\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
