@@ -261,7 +261,7 @@ double computeMax()
 	double mx_out = 0;
 
 	omp_set_num_threads(NUM_THREADS + 10);
-
+	double t = omp_get_wtime();
 #pragma omp parallel
 	{
 		
@@ -287,6 +287,7 @@ double computeMax()
 			mx_out = std::max(mx, mx_out);
 		}
 	}
+	printf("time : %f\n", omp_get_wtime() - t);
 
 	return mx_out;
 }
