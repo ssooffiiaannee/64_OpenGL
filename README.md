@@ -1,4 +1,4 @@
-Shrodinger equation solutions with OpenGL
+Shrodinger equation solutions 3D representation with OpenGL
 ==============
 # Hydrogen Schrodinger equation solution for (n, l, m) = (4, 3, 2)
 
