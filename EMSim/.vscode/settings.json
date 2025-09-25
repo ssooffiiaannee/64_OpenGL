@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "xstring": "cpp",
+        "wms_win32.h": "c"
+    }
+}
