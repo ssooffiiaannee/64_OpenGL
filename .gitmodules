@@ -1,0 +1,3 @@
+[submodule "Vulkan_memo/vulkan_linux/glfw"]
+	path = Vulkan_memo/vulkan_linux/glfw
+	url = https://github.com/glfw/glfw.git
